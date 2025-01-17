@@ -108,7 +108,7 @@ for arch in architectures:
     model = load_model(arch)
 
     # Train the model
-    history = model.fit(X_train, y_train, epochs=10, validation_data=(X_test, y_test), batch_size=10)
+    history = model.fit(X_train, y_train, epochs=10, validation_data=(X_test, y_test), batch_size=32)
 
     # Extract features
     feature_extractor = Model(inputs=model.input, outputs=model.layers[-3].output)
