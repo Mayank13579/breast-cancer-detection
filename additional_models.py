@@ -103,12 +103,38 @@ def load_model(architecture, input_shape=(224, 224, 3)):
 architectures = ["ConvNeXt"]
 results = {}
 
+
+output_dir = "output_graphs"
+os.makedirs(output_dir, exist_ok=True)
+
+
 for arch in architectures:
     print(f"Training model: {arch}")
     model = load_model(arch)
 
     # Train the model
     history = model.fit(X_train, y_train, epochs=10, validation_data=(X_test, y_test), batch_size=32)
+
+    # Plot training and validation accuracy and loss
+    plt.figure(figsize=(12, 6))
+    plt.plot(history.history['accuracy'], label='Train Accuracy')
+    plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+    plt.title(f'{arch} Accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.savefig(os.path.join(output_dir, f'{arch}_accuracy.png'))
+    plt.close()
+
+    plt.figure(figsize=(12, 6))
+    plt.plot(history.history['loss'], label='Train Loss')
+    plt.plot(history.history['val_loss'], label='Validation Loss')
+    plt.title(f'{arch} Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.savefig(os.path.join(output_dir, f'{arch}_loss.png'))
+    plt.close()
 
     # Extract features
     feature_extractor = Model(inputs=model.input, outputs=model.layers[-3].output)
@@ -125,11 +151,33 @@ for arch in architectures:
                           ("GradientBoosting", GradientBoostingClassifier())]:
         clf.fit(X_train_features_flat, np.argmax(y_train, axis=1))
         predictions = clf.predict(X_test_features_flat)
+
+        # Calculate metrics
         accuracy = accuracy_score(np.argmax(y_test, axis=1), predictions)
+        precision = precision_score(np.argmax(y_test, axis=1), predictions)
+        recall = recall_score(np.argmax(y_test, axis=1), predictions)
+        f1 = f1_score(np.argmax(y_test, axis=1), predictions)
+        roc_auc = roc_auc_score(np.argmax(y_test, axis=1), clf.predict_proba(X_test_features_flat)[:, 1])
+
+        # Confusion matrix
+        cm = confusion_matrix(np.argmax(y_test, axis=1), predictions)
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Negative', 'Positive'], yticklabels=['Negative', 'Positive'])
+        plt.title(f'{arch} - {clf_name} Confusion Matrix')
+        plt.xlabel('Predicted')
+        plt.ylabel('True')
+        plt.savefig(os.path.join(output_dir, f'{arch}_{clf_name}_confusion_matrix.png'))
+        plt.close()
 
         if arch not in results:
             results[arch] = {}
-        results[arch][clf_name] = accuracy
+        results[arch][clf_name] = {
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall": recall,
+            "f1_score": f1,
+            "roc_auc": roc_auc
+        }
 
     print(f"Completed training for {arch}")
 
