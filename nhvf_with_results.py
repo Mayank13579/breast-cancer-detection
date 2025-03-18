@@ -19,12 +19,10 @@ from tensorflow.keras.applications import ResNet50, InceptionV3, VGG16
 from transformers import AutoImageProcessor, AutoModel, AutoModelForImageClassification
 import torch
 
-
 import gc
 from transformers import AutoProcessor, AutoModel
 
 # Step 1: Data Preprocessing
-
 DATASET_PATH = './dataset'
 
 image_size = (224, 224)
@@ -81,8 +79,6 @@ model_vit = AutoModel.from_pretrained("google/vit-base-patch16-224-in21k")
 processor_swin = AutoImageProcessor.from_pretrained("microsoft/swin-base-patch4-window7-224", do_rescale=False)
 model_swin = AutoModelForImageClassification.from_pretrained("microsoft/swin-base-patch4-window7-224")
 
-
-
 #  using batch size for low resource pc
 def extract_features_transformer(processor, model, images, batch_size=16):
     features = []
@@ -113,8 +109,6 @@ def extract_features_transformer(processor, model, images, batch_size=16):
     features = np.concatenate(features, axis=0)
     return features
 
-
-
 transformer_features_train_vit = extract_features_transformer(processor_vit, model_vit, X_train)
 transformer_features_test_vit = extract_features_transformer(processor_vit, model_vit, X_test)
 transformer_features_train_swin = extract_features_transformer(processor_swin, model_swin, X_train)
@@ -122,10 +116,6 @@ transformer_features_test_swin = extract_features_transformer(processor_swin, mo
 
 transformer_features_train = np.concatenate([transformer_features_train_vit, transformer_features_train_swin], axis=1)
 transformer_features_test = np.concatenate([transformer_features_test_vit, transformer_features_test_swin], axis=1)
-
-
-
-
 
 # Combining Features
 features_train = np.concatenate((cnn_features_train, transformer_features_train), axis=1)
