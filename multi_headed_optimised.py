@@ -23,7 +23,7 @@ from tensorflow.keras.applications import ResNet50, InceptionV3, VGG16
 from transformers import AutoImageProcessor, AutoModel, AutoModelForImageClassification
 
 # Step 1: Data Preprocessing
-DATASET_PATH = './dataset/IDC/training'
+DATASET_PATH = './dataset'
 image_size = (224, 224)
 
 # Image loading and preprocessing
@@ -37,14 +37,14 @@ def load_and_preprocess_image(image_path):
 
 # Load images and labels
 X, y = [], []
-for label in ['0', '1']:
+for label in ['IDC_negative', 'IDC_positive']:
     folder_path = os.path.join(DATASET_PATH, label)
     for img_name in os.listdir(folder_path):
         img_path = os.path.join(folder_path, img_name)
         image = load_and_preprocess_image(img_path)
         if image is not None:
             X.append(image)
-            y.append(0 if label == '0' else 1)
+            y.append(0 if label == 'IDC_negative' else 1)
 
 X = np.array(X)
 y = np.array(y)
@@ -80,7 +80,7 @@ def extract_features_transformer(processor, model, images):
     model = model.to(device)
     features = []
     for batch in np.array_split(images, len(images) // 32 + 1):
-        inputs = processor(batch.tolist(), return_tensors="pt", padding=True).to(device)
+        inputs = processor(images=[image for image in batch], return_tensors="pt").to(device)
         with torch.no_grad():
             outputs = model(**inputs)
             features.append(outputs.last_hidden_state[:, 0, :].cpu().numpy())
