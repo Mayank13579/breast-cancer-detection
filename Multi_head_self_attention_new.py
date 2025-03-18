@@ -4,31 +4,6 @@ import urllib3
 ssl._create_default_https_context = ssl._create_unverified_context
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-import zipfile
-import requests
-from io import BytesIO
-
-# Step 0: Download and Extract Dataset from Dropbox
-dropbox_link = "YOUR_DROPBOX_LINK_HERE"  # Replace with your actual Dropbox link
-
-def download_and_extract_from_dropbox(url, extract_to='./dataset'):
-    print("Downloading dataset from Dropbox...")
-    url = url.replace("?dl=0", "?dl=1")  # Ensure direct download
-    response = requests.get(url, stream=True)
-
-    if response.status_code == 200:
-        print("Download successful. Extracting archive...")
-        with zipfile.ZipFile(BytesIO(response.content)) as archive:
-            archive.extractall(extract_to)
-        print(f"Extraction completed. Files are stored in '{extract_to}'.")
-    else:
-        print("Failed to download the dataset. Please check the link.")
-        exit()
-
-download_and_extract_from_dropbox(dropbox_link)
-
-
-
 import numpy as np
 import pandas as pd
 import cv2
@@ -49,7 +24,7 @@ from transformers import AutoProcessor, AutoModel
 
 # Step 1: Data Preprocessing
 
-DATASET_PATH = './dataset'
+DATASET_PATH = './dataset/IDC/training'
 image_size = (224, 224)
 
 def load_and_preprocess_image(image_path):
@@ -62,14 +37,14 @@ def load_and_preprocess_image(image_path):
 
 # Load images and labels
 X, y = [], []
-for label in ['IDC_negative', 'IDC_positive']:
+for label in ['0', '1']:
     folder_path = os.path.join(DATASET_PATH, label)
     for img_name in os.listdir(folder_path):
         img_path = os.path.join(folder_path, img_name)
         image = load_and_preprocess_image(img_path)
         if image is not None:
             X.append(image)
-            y.append(0 if label == 'IDC_negative' else 1)
+            y.append(0 if label == '0' else 1)
 
 X = np.array(X)
 y = np.array(y)
