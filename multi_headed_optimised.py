@@ -59,6 +59,7 @@ cnn_models = [
     VGG16(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
 ]
 
+
 # Efficient CNN Feature Extraction
 def extract_features_cnn(model, data):
     features = model.predict(data, batch_size=32)

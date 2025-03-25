@@ -24,7 +24,7 @@ from transformers import AutoProcessor, AutoModel
 
 # Step 1: Data Preprocessing
 
-DATASET_PATH = './dataset/IDC/training'
+DATASET_PATH = './dataset/'
 image_size = (224, 224)
 
 def load_and_preprocess_image(image_path):
@@ -37,7 +37,7 @@ def load_and_preprocess_image(image_path):
 
 # Load images and labels
 X, y = [], []
-for label in ['0', '1']:
+for label in ['IDC_negative', 'IDC_positive']:
     folder_path = os.path.join(DATASET_PATH, label)
     for img_name in os.listdir(folder_path):
         img_path = os.path.join(folder_path, img_name)
